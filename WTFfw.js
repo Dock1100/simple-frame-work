@@ -321,7 +321,7 @@ var _=(function(){
           })
           return this
         },
-
+	//hide and show used for tests
     hide: function () {//hide element
           return this.css('display','none');
         },
