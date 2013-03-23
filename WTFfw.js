@@ -64,21 +64,29 @@ var _=(function(){
     return vector
   }
 
-  function _(selector) {//init wtf framework for current selector or element
+  function _(selector, root) {//init wtf framework for current selector or element
     if (window === this) return new _(selector);//set "this" 
     var elements = [];
     elements.__proto__ = _.fn//framework is extension of array, so outside additional properties(function) is invisible but avaible
     if (!selector) return elements;
     if (typeof selector == "string") {
       if (selector) {
-        elements = document .querySelectorAll(selector) || []
+        if (root === undefined) {
+          elements = document.querySelectorAll(selector) || []
+        } else {
+          elements = root.querySelectorAll(selector) || []
+        }
         elements.__proto__ = _.fn
-        forEach(elements, function(e, i){ 
+        /*forEach(elements, function(e, i){ 
           for (var func in _.fn)
             elements[i][func] = _.fn[func] 
-        })//+= is important        
+        })*/     
         return elements
       }
+    } else if (isArray(selector)){
+      for (var i=0;i<selector.length;i++)
+        elements[i] = selector[i];
+      return elements;
     } else {
       elements = [selector] || []//if selector is htmlElement
       elements.__proto__ = _.fn
@@ -135,7 +143,7 @@ var _=(function(){
               if (typeof property === "string") {
                 var result = []
                 this.each(function(i){              
-                  result[i] = this.style[camelize(property)] || this.style.getPropertyValue(property)
+                  result[i] = this.style[camelize(property)] || window.getComputedStyle(this, null).getPropertyValue(property)
                 })
                 return (likeArray(this)) ? result : result[0];
               } else {//object
@@ -182,6 +190,32 @@ var _=(function(){
           return this
         },
 
+    append: function(elem) {//add html block at end
+          if(elem !== undefined)
+            if (!likeArray(elem)){
+              this.each(function(){
+                    this.appendChild(elem)
+                    })
+            } else {
+              for (var i=0;i<elem.length;i++) {
+                if (likeArray(elem[i])) {
+                  this.append(elem[i])
+                } else this.each(function(){
+                    this.appendChild(elem[i])
+                    })
+              }
+            }
+          return this
+        },
+
+    prepend: function(elem) {//add html block at top
+          if(elem !== undefined)
+            this.each(function(){
+                    this.insertBefore(elem,this.firstChild)
+                  })
+          return this
+        },
+
     addClass: function (name) {//add class
           if (name) {
             var names = name.split(' ');
@@ -189,7 +223,7 @@ var _=(function(){
               for (var i=0;i<names.length;i++) {
                 if (names[i])//check for empty string
                   this.each(function(){
-                    if (!this.hasClass(names[i]))
+                    if (!_(this).hasClass(names[i]))
                       this.className += (this.className ? ' ' : '') + names[i]; 
                   })
               }
@@ -320,6 +354,43 @@ var _=(function(){
             }
           })
           return this
+        },
+
+    clippingRect: function(rect) {//set html for all, or get html of all in array
+            if (rect === undefined) {
+              var result = []
+              this.each(function(i){
+                      console.log('hi')
+                      result[i] = {
+                        'left' : 0,
+                        'top' : 0,
+                        'width' : 0,
+                        'height' : 0,
+                        'right' : 0,
+                        'bottom' : 0
+                      }
+                      with(result[i]) {
+                      left = this.offsetLeft
+                      top = this.offsetTop
+                      width = this.offsetWidth
+                      height = this.offsetHeight
+                      right = left + width
+                      bottom = top + height
+                      }
+                    })
+              return result
+            } else {
+              this.each(function(){
+                        var r = {}
+                        for (var key in rect)
+                          if (key=='left' || key=="top" || key=="width" || key=="height")
+                          {
+                            r[key]=parseInt(rect[key])+'px'
+                          }
+                        _(this).css(r)
+                    })
+              return this;
+            }
         },
 	//hide and show used for tests
     hide: function () {//hide element
