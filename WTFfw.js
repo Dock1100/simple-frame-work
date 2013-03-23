@@ -1,43 +1,10 @@
 /*WTF FrameWork
-copy pasta
-
-  function deserializeValue(value) {
-    var num
-    try {
-      return value ?
-        value == "true" ||
-        ( value == "false" ? false :
-          value == "null" ? null :
-          !isNaN(num = Number(value)) ? num :
-          /^[\[\{]/.test(value) ? $.parseJSON(value) :
-          value )
-        : value
-    } catch(e) {
-      return value
-    }
-  }
-
-  $.HS = function (c) {
-    function f(a, b) {
-      c.push([])
-      return d(a, b)
-    }
-    function d(a, b) {
-      b = "" + (b || "")
-      a && e("<", a, ">")
-      b && e(b)
-      a && e("</", a.split(" ")[0], ">")
-      return d
-    }
-    d.toString = function () {
-      return c.pop().join("")
-    }
-
-    function e() {
-      c[c.length - 1].push(c.join.call(arguments, ""))
-    }
-    return f
-  }([])
+                   _____________  ===========
+\\              // -------------  ||
+ \\            //       ||        ||
+  \\          //        ||        ||====
+   \\  //\\  //         ||        ||
+    \\//  \\//          ||        ||
 */
 
 var _=(function(){
@@ -210,10 +177,19 @@ var _=(function(){
 
     prepend: function(elem) {//add html block at top
           if(elem !== undefined)
-            this.each(function(){
+            if (!likeArray(elem)){
+              this.each(function(){
                     this.insertBefore(elem,this.firstChild)
-                  })
-          return this
+                    })
+            } else {
+              for (var i=0;i<elem.length;i++) {
+                if (likeArray(elem[i])) {
+                  this.append(elem[i])
+                } else this.each(function(){
+                    this.insertBefore(elem[i],this.firstChild)
+                    })
+              }
+            }
         },
 
     addClass: function (name) {//add class
@@ -356,7 +332,7 @@ var _=(function(){
           return this
         },
 
-    clippingRect: function(rect) {//set html for all, or get html of all in array
+    clippingRect: function(rect) {
             if (rect === undefined) {
               var result = []
               this.each(function(i){
